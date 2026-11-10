@@ -32,7 +32,9 @@ favicon. No server code, no runtime environment variables, no API keys.
 ## Features
 
 ### Content
-- Textarea for URLs, plain text, Wi-Fi strings, vCard payloads, etc.
+- **Templates** — guided forms for Wi-Fi, vCard, email, SMS, geo and calendar
+  events. The generated payload stays visible and can be edited as plain text.
+- Textarea for URLs, plain text or any other payload a QR code can hold.
 - 4,000-character counter and a one-click **Clear** button.
 - Live preview updates 300ms after typing stops, so large payloads stay smooth.
 
@@ -76,7 +78,10 @@ src/
     Header.tsx            brand + theme toggle
     Preview.tsx           live preview, frame wrapper, risk notices
     PresetBar.tsx         one-click styles
-    ContentSection.tsx    content textarea
+    ContentSection.tsx    content card shell + clear action
+    ContentEditor.tsx     text/template mode switch, generated payload
+    TemplatePicker.tsx    content-type buttons
+    TemplateForm.tsx      guided template fields
     ColorsSection.tsx     colors + gradient
     DotsSection.tsx       dot/corner shape controls
     LogoSection.tsx       upload, validation, sizing
@@ -89,6 +94,8 @@ src/
   hooks/
     useDebouncedValue.ts  generic debounce hook
   lib/
+    content.ts            content length limit and helpers
+    templates/            Wi-Fi, vCard, email, SMS, geo, event payload builders
     defaults.ts           default config + presets
     qr.ts                 QR options, frame geometry, PNG/SVG render + downloads
     config.ts             validation/normalization, contrast and logo risk checks
@@ -113,6 +120,13 @@ are scaled from a 512px reference so the preview and export match at any size.
 Content is debounced; style changes bypass the debounce. The instance is bound to
 its container node so it is recreated if React remounts the preview (for example
 after clearing the content).
+
+### Templates
+Each payload type lives in its own module under `src/lib/templates/`: fields,
+defaults and a pure `build(values)` function. `ContentEditor` regenerates the
+content string on every field change, so the live preview stays in sync.
+`normalizeConfig()` sanitizes template state from localStorage or imported JSON
+through `normalizeTemplate()`, keeping only known kinds and fields.
 
 ### Frames and export
 The library draws the QR artwork only. Frames are composed by the app:
@@ -212,6 +226,9 @@ Latest Chrome, Edge, Firefox and Safari.
   upload (valid/invalid/oversized files), frame + label, theme toggle, clear and
   retype, persistence across reload, empty-content export guard, risk warnings,
   and the 390px stacked layout.
+- Exercised every content template in the dev build and checked the generated
+  payload for each (Wi-Fi escaping, vCard/iCalendar lines, mailto/SMS/geo
+  prefixes) plus template persistence across reload.
 - Exported PNG and SVG files (including logo + frame) were decoded back to the
   exact input string with a QR decoder during development, across all five
   presets. Phone-camera scanning was not performed in this environment.
@@ -221,7 +238,6 @@ Latest Chrome, Edge, Firefox and Safari.
 ## Possible future enhancements
 
 - **Batch generation** from CSV/JSON with a ZIP download.
-- **Templates** for Wi-Fi, vCard, email, SMS, geo and event payloads with form UI.
 - **Richer logo support** — SVG-specific handling, auto-trimming, background
   shape (circle/square), and built-in icon library.
 - **History** of recent codes with thumbnails, names and one-click restore.

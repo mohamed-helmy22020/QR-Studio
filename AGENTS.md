@@ -52,10 +52,16 @@ npm run lint     # oxlint (0 errors expected)
 
 - `src/App.tsx` — app state, localStorage effects, export actions, layout shell.
 - `src/components/Preview.tsx` — QR instance lifecycle, frame preview, warnings.
+- `src/components/ContentEditor.tsx` — text/template mode switch; template form
+  and payload regeneration. `TemplatePicker.tsx` and `TemplateForm.tsx` hold the
+  content-type buttons and guided fields.
+- `src/lib/templates/` — one module per payload type (Wi-Fi, vCard, email, SMS,
+  geo, event) plus definitions and normalization. Builders are pure functions.
 - `src/lib/qr.ts` — QR options, frame geometry, PNG/SVG composition, download and
   clipboard helpers. All new export math belongs here or in a new focused module.
 - `src/lib/config.ts` — validation/normalization and scannability heuristics.
 - `src/lib/defaults.ts` — default config, presets, inline brand logo.
+- `src/lib/content.ts` — content length limit and helpers.
 - `src/lib/storage.ts` — safe localStorage access and quota fallback.
 - `src/components/ui.tsx` — generic inputs/buttons/alerts. If it grows, split it
   by control type.

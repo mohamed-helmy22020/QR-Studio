@@ -1,3 +1,5 @@
+import type { TemplateConfig } from './lib/templates/types'
+
 /** Shapes of the style values supported by qr-code-styling. */
 export type DotStyle =
   | 'square'
@@ -40,6 +42,7 @@ export interface FrameConfig {
 
 export interface QRConfig {
   content: string
+  template: TemplateConfig
   fgColor: string
   bgColor: string
   transparentBg: boolean

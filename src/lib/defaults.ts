@@ -20,6 +20,7 @@ export function makeBrandLogo(): string {
 
 export const DEFAULT_CONFIG: QRConfig = {
   content: 'https://example.com',
+  template: { kind: 'text', values: {} },
   fgColor: '#0f172a',
   bgColor: '#ffffff',
   transparentBg: false,

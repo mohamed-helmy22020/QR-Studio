@@ -18,7 +18,8 @@ thing on screen.
   and the settings stack. No horizontal scrolling at 390px.
 - Header is a slim bar with the brand mark, "No tracking" pill and theme toggle.
   Footer repeats the privacy statement and localStorage note.
-- Section order: Presets → Content → Colors → Dots → Logo → Frame → Output.
+- Section order: Presets → Content (text or template) → Colors → Dots → Logo →
+  Frame → Output.
 
 ## Design tokens
 
@@ -62,6 +63,9 @@ fields. Section headers carry a one-line description in muted text.
 - **Alert** — warning / danger / info, `role="alert"` except info (`status`).
 - **Toast** — bottom-center, auto-dismisses after 3.5s, `aria-live="polite"`.
 - **Preset cards** — swatch + name + description; 2 columns mobile, 5 desktop.
+- **Content type picker** — pressed-state buttons for Text, Wi-Fi, vCard, Email,
+  SMS, Location and Event. Templates show a guided form and a read-only payload;
+  Text mode exposes the same payload as an editable textarea.
 
 Color fields accept `#rgb`/`#rrggbb` text and a native picker. Invalid input is
 marked with `aria-invalid`, a red border and a helper message, and reverts on

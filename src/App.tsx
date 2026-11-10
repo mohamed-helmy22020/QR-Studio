@@ -177,10 +177,7 @@ function App() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-start">
           <div className="order-2 space-y-4 lg:order-1">
             <PresetBar onApply={applyPreset} />
-            <ContentSection
-              content={config.content}
-              onChange={(content) => update({ content })}
-            />
+            <ContentSection config={config} update={update} />
             <ColorsSection config={config} update={update} />
             <DotsSection config={config} update={update} />
             <LogoSection

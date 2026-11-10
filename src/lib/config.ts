@@ -1,4 +1,6 @@
+import { clampContent } from './content'
 import { DEFAULT_CONFIG } from './defaults'
+import { normalizeTemplate } from './templates/normalize'
 import type {
   CornerDotStyle,
   CornerSquareStyle,
@@ -95,7 +97,8 @@ export function normalizeConfig(raw: unknown): QRConfig {
 
   return {
     content:
-      typeof raw.content === 'string' ? raw.content.slice(0, 4000) : fallback.content,
+      typeof raw.content === 'string' ? clampContent(raw.content) : fallback.content,
+    template: normalizeTemplate(raw.template, fallback.template),
     fgColor: hexColor(raw.fgColor, fallback.fgColor),
     bgColor: hexColor(raw.bgColor, fallback.bgColor),
     transparentBg:
