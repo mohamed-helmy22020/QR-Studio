@@ -5,17 +5,20 @@ import { Alert, Button, FileButton } from './ui'
 
 interface ConfigToolsProps {
   onCopyConfig: () => Promise<void>
+  onCopyShareLink: () => Promise<void>
   onLoadConfig: (config: QRConfig) => void
   onReset: () => void
 }
 
 export function ConfigTools({
   onCopyConfig,
+  onCopyShareLink,
   onLoadConfig,
   onReset,
 }: ConfigToolsProps) {
   const [error, setError] = useState<string | null>(null)
   const [copying, setCopying] = useState(false)
+  const [sharing, setSharing] = useState(false)
 
   const handleImport = async (file: File) => {
     setError(null)
@@ -53,6 +56,28 @@ export function ConfigTools({
         >
           Copy config
         </Button>
+        <Button
+          variant="ghost"
+          icon="link"
+          loading={sharing}
+          onClick={async () => {
+            setSharing(true)
+            setError(null)
+            try {
+              await onCopyShareLink()
+            } catch (err) {
+              setError(
+                err instanceof Error
+                  ? err.message
+                  : 'Could not create a share link.',
+              )
+            } finally {
+              setSharing(false)
+            }
+          }}
+        >
+          Copy share link
+        </Button>
         <FileButton
           variant="secondary"
           icon="upload"
@@ -67,8 +92,10 @@ export function ConfigTools({
       </div>
       {error ? <Alert tone="danger">{error}</Alert> : null}
       <p className="text-xs leading-5 text-muted">
-        Config JSON excludes nothing — logos travel with it, so a teammate can
-        reproduce the exact code.
+        Config JSON includes everything, logos and content too. Share links are
+        compressed into the URL and carry style settings only, so the
+        recipient&apos;s content stays untouched. The logo is dropped if it
+        would make the link too long.
       </p>
     </div>
   )

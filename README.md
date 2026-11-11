@@ -10,6 +10,11 @@ and no tracking. Generated images never leave the device.
 ![Styling](https://img.shields.io/badge/styles-Tailwind%20CSS%204-0ea5e9)
 ![QR engine](https://img.shields.io/badge/QR-qr--code--styling%201.9-111827)
 
+**Contents:** [Quick start](#quick-start) · [Features](#features) ·
+[Project structure](#project-structure) · [How it works](#how-it-works) ·
+[Privacy by design](#privacy-by-design) · [Static hosting](#static-hosting) ·
+[Browser support](#browser-support)
+
 ---
 
 ## Quick start
@@ -56,11 +61,19 @@ favicon. No server code, no runtime environment variables, no API keys.
   copy PNG to clipboard.
 - Bounded clipboard timeout so the button never gets stuck on "Copying…".
 
+### Sharing and portability
+- **Share links** — compress the current style and output settings into the URL
+  hash and copy it in one click. Nothing is uploaded, and the recipient's QR
+  content and template are kept.
+- **Copy config as JSON** — includes the content and logo data URL for an exact
+  hand-off.
+- **Load config from JSON** — validated and normalized before it touches state.
+- **Reset all** — back to defaults in one click.
+
 ### Quality of life
 - Debounced live preview, and style changes still redraw immediately.
 - Scannability warnings for low contrast and for logos that exceed the error
   correction budget.
-- Copy config as JSON, load config from JSON (logos included), reset all.
 - Light/dark **UI** theme (independent of the QR colors).
 - Settings persist in `localStorage`; logo data is dropped first if storage is full.
 - Keyboard-navigable, labeled controls, skip link, visible focus rings, alerts
@@ -87,7 +100,7 @@ src/
     LogoSection.tsx       upload, validation, sizing
     FrameSection.tsx      frame + label controls
     OutputSection.tsx     size, EC level, export buttons
-    ConfigTools.tsx       JSON copy/load/reset
+    ConfigTools.tsx       JSON copy/load, share links, reset
     ui.tsx                shared fields, buttons, alerts
     Icon.tsx              inline icon set (no icon library)
     Toast.tsx             transient feedback
@@ -98,6 +111,7 @@ src/
     templates/            Wi-Fi, vCard, email, SMS, geo, event payload builders
     defaults.ts           default config + presets
     qr.ts                 QR options, frame geometry, PNG/SVG render + downloads
+    share.ts              compressed share-link encoding/decoding
     config.ts             validation/normalization, contrast and logo risk checks
     storage.ts            localStorage helpers with graceful fallbacks
     cx.ts                 className helper
@@ -145,6 +159,21 @@ The library draws the QR artwork only. Frames are composed by the app:
 proportional to the output size (5% padding, 1.8% border, 14% label band), and
 `Preview.tsx` mirrors those values with container query units (`cqw`).
 
+### Share links
+`src/lib/share.ts` builds a style-only payload from the config, serializes it to
+JSON, gzips it with the native `CompressionStream` API, and encodes the bytes as
+base64url in the URL hash (`#config=…`). The QR content and template are
+deliberately excluded, so a link can never leak a Wi-Fi password or vCard
+details. Opening a link decodes the payload, validates it through
+`normalizeConfig()`, merges the style fields into the current config, and then
+removes the hash with `history.replaceState` so a reload falls back to local
+settings.
+
+If the share URL would exceed 8,000 characters, the link is rebuilt without
+`logo.dataUrl` and the UI says the logo was omitted. If it still does not fit,
+the app asks the user to use Copy config instead. Browsers without
+`CompressionStream` get an actionable error rather than a broken link.
+
 ### Scannability safeguards
 - `isLowContrast()` uses WCAG relative luminance to flag dot/background pairs
   below a 3:1 ratio.
@@ -160,9 +189,25 @@ logo is excluded and the rest of the settings still persist.
 
 ---
 
+## Privacy by design
+
+- No backend, analytics, accounts, telemetry, cookies, or runtime network calls.
+- No remote fonts, images, CDNs, or third-party scripts; every asset is bundled
+  or inlined.
+- Logos and presets are data URLs; QR images are generated and downloaded
+  entirely on-device.
+- Settings live in `localStorage`.
+- Share links carry style settings only — never the QR content — but the link
+  itself is still data. Treat it like the style config it contains.
+- The only network request is the initial page load.
+
+---
+
 ## Static hosting
 
 The app is a plain static bundle. Build with `npm run build` and publish `dist/`.
+Share links work on any host because the payload lives after `#` and is never
+sent to the server.
 
 ### Netlify
 - Build command: `npm run build`
@@ -214,6 +259,9 @@ Latest Chrome, Edge, Firefox and Safari.
 - SVG export uses `DOMParser`/`XMLSerializer`, both widely supported.
 - Copy-to-clipboard images require a secure context (HTTPS or localhost) and
   `ClipboardItem`; the button reports a friendly error where unsupported.
+- Share links use `CompressionStream`/`DecompressionStream` (gzip) plus
+  clipboard access; unsupported browsers show an actionable message and JSON
+  copy/load still works.
 - Safari needs a user gesture for downloads; the export buttons provide one.
 
 ---
@@ -229,6 +277,10 @@ Latest Chrome, Edge, Firefox and Safari.
 - Exercised every content template in the dev build and checked the generated
   payload for each (Wi-Fi escaping, vCard/iCalendar lines, mailto/SMS/geo
   prefixes) plus template persistence across reload.
+- Round-tripped style configs through share links: content/template stayed out of
+  the payload and survived on the receiving tab, styles applied, the hash was
+  removed after load, oversized logos were omitted, and invalid links showed a
+  danger toast.
 - Exported PNG and SVG files (including logo + frame) were decoded back to the
   exact input string with a QR decoder during development, across all five
   presets. Phone-camera scanning was not performed in this environment.
@@ -244,5 +296,3 @@ Latest Chrome, Edge, Firefox and Safari.
 - **PNG transparency and print bleed** controls, plus PDF/EPS export.
 - **Auto-contrast suggestions** and a built-in "test scan" using the
   `BarcodeDetector` API where available.
-- **Shareable configs via URL** (compressed hash payload) for hand-off without a
-  file.

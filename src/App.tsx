@@ -14,6 +14,11 @@ import { serializeConfig } from './lib/config'
 import { DEFAULT_CONFIG } from './lib/defaults'
 import { copyQrToClipboard, downloadQr } from './lib/qr'
 import {
+  buildShareLink,
+  decodeSharePayload,
+  readShareHash,
+} from './lib/share'
+import {
   getInitialTheme,
   loadConfig,
   saveConfig,
@@ -29,6 +34,7 @@ function App() {
   const [exportError, setExportError] = useState<string | null>(null)
   const [toast, setToast] = useState<ToastMessage | null>(null)
   const toastId = useRef(0)
+  const shareHandled = useRef(false)
 
   const showToast = useCallback(
     (text: string, tone: ToastMessage['tone'] = 'success') => {
@@ -123,6 +129,19 @@ function App() {
     showToast('Config JSON copied to the clipboard.')
   }
 
+  const handleCopyShareLink = async () => {
+    if (!navigator.clipboard?.writeText) {
+      throw new Error('Clipboard access is unavailable in this browser.')
+    }
+    const share = await buildShareLink(config)
+    await navigator.clipboard.writeText(share.url)
+    showToast(
+      share.logoOmitted
+        ? 'Share link copied without the logo (style settings only).'
+        : 'Share link copied (style settings only).',
+    )
+  }
+
   const handleLoadConfig = (next: QRConfig) => {
     setConfig(next)
     setExportError(null)
@@ -146,6 +165,32 @@ function App() {
     const timer = window.setTimeout(() => saveConfig(config), 400)
     return () => window.clearTimeout(timer)
   }, [config])
+
+  // Apply a shared config from the URL hash once, then remove it so a reload
+  // uses the saved local settings instead of re-importing the link.
+  useEffect(() => {
+    if (shareHandled.current) return
+    shareHandled.current = true
+
+    const payload = readShareHash(window.location.hash)
+    if (!payload) return
+
+    const cleanUrl = `${window.location.pathname}${window.location.search}`
+    decodeSharePayload(payload)
+      .then((shared) => {
+        setConfig((prev) => ({ ...prev, ...shared }))
+        setExportError(null)
+        showToast('Shared style loaded. Your content was kept.')
+      })
+      .catch((err) => {
+        const message =
+          err instanceof Error ? err.message : 'That share link could not be read.'
+        showToast(message, 'danger')
+      })
+      .finally(() => {
+        window.history.replaceState(null, '', cleanUrl)
+      })
+  }, [showToast])
 
   return (
     <div className="min-h-dvh bg-app">
@@ -195,6 +240,7 @@ function App() {
               onDownload={handleDownload}
               onCopyImage={handleCopyImage}
               onCopyConfig={handleCopyConfig}
+              onCopyShareLink={handleCopyShareLink}
               onLoadConfig={handleLoadConfig}
               onReset={handleReset}
             />

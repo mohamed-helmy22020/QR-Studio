@@ -66,6 +66,9 @@ fields. Section headers carry a one-line description in muted text.
 - **Content type picker** — pressed-state buttons for Text, Wi-Fi, vCard, Email,
   SMS, Location and Event. Templates show a guided form and a read-only payload;
   Text mode exposes the same payload as an editable textarea.
+- **Config tools** — Copy config, Copy share link, Load config and Reset.
+  Share links carry style/output settings only; the recipient's content and
+  template are preserved. The helper text spells out that distinction.
 
 Color fields accept `#rgb`/`#rrggbb` text and a native picker. Invalid input is
 marked with `aria-invalid`, a red border and a helper message, and reverts on

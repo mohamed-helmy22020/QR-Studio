@@ -20,6 +20,7 @@ interface OutputSectionProps {
   onDownload: (extension: 'png' | 'svg') => void
   onCopyImage: () => void
   onCopyConfig: () => Promise<void>
+  onCopyShareLink: () => Promise<void>
   onLoadConfig: (config: QRConfig) => void
   onReset: () => void
 }
@@ -79,6 +80,7 @@ export function OutputSection({
   onDownload,
   onCopyImage,
   onCopyConfig,
+  onCopyShareLink,
   onLoadConfig,
   onReset,
 }: OutputSectionProps) {
@@ -175,6 +177,7 @@ export function OutputSection({
       <div className="border-t border-line pt-4">
         <ConfigTools
           onCopyConfig={onCopyConfig}
+          onCopyShareLink={onCopyShareLink}
           onLoadConfig={onLoadConfig}
           onReset={onReset}
         />

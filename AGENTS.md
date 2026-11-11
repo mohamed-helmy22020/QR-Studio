@@ -60,6 +60,8 @@ npm run lint     # oxlint (0 errors expected)
 - `src/lib/qr.ts` — QR options, frame geometry, PNG/SVG composition, download and
   clipboard helpers. All new export math belongs here or in a new focused module.
 - `src/lib/config.ts` — validation/normalization and scannability heuristics.
+- `src/lib/share.ts` — style-only share-link encoding/decoding. Links deliberately
+  exclude QR content and template so URLs never leak payload data.
 - `src/lib/defaults.ts` — default config, presets, inline brand logo.
 - `src/lib/content.ts` — content length limit and helpers.
 - `src/lib/storage.ts` — safe localStorage access and quota fallback.
@@ -89,6 +91,8 @@ Before reporting a change as done:
    confirm it decodes to the expected content. A separate QR decoder in dev
    (`npm i --no-save --no-package-lock jsqr`, then load it from the page) works
    well; remove it afterwards.
-5. Check the 390px layout for horizontal overflow when changing layout.
+5. If sharing changed, round-trip a link and confirm the recipient's content is
+   preserved while the shared style is applied.
+6. Check the 390px layout for horizontal overflow when changing layout.
 
 See `DESIGN.md` for visual and interaction design details.
